@@ -1,0 +1,57 @@
+Tabu Audio Player
+=================
+
+Tabu is a simple GTK+ audio player with client-side decorations drawn
+using Cairo.
+
+It uses it's own window decorations and play controls drawn with Cairo.
+Tabu is designed to be simple, it's main and only goal is to play music.
+ 
+
+Feature highlights:
+- Tabu uses GStreamer as it's backend
+- Tag extraction with TagLib library.
+- Fast and light-weight
+
+Requirements
+============
+
+Tabu requires the following packages:
+
+- gtk+2 >= 2.10
+- taglib >= 1.5 (C Bindings)
+- gstreamer
+
+Installation
+============
+
+unpack the source archive and run the following command(s):
+
+$ cd tabu_audio_player-[version]
+
+$ ./configure --prefix=/usr
+
+If this completes without any errors, run the make command in order to
+compile tabu.
+
+$ make
+
+And then run make install (as root) to install tabu.
+
+$ make install
+
+Reporting bugs
+==============
+
+Report any bug(s) by sending us an email at kalmbach@gmail.com with a detailed 
+description and steps to reproduce the bug. Also mention your version of Tabu.
+
+Authors
+=======
+
+See the AUTHORS file included with this package.
+
+
+
+
+
