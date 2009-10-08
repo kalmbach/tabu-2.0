@@ -49,6 +49,8 @@ void tabu_playlist_append (
   TabuPlaylist *playlist, gchar* filename, gchar *uri);
 
 void tabu_playlist_clear (TabuPlaylist *playlist);
+void tabu_playlist_crop_selection (TabuPlaylist *playlist, GtkTreeSelection *selection);
+void tabu_playlist_remove_selection (TabuPlaylist *playlist, GtkTreeSelection *selection);
 
 G_END_DECLS
 

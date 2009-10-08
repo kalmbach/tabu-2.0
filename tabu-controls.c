@@ -7,6 +7,7 @@
 
 #include "tabu-controls.h"
 #include "tabu-backend.h"
+#include "tabu-playlist.h"
 #include "tabu.h"
 
 static GtkType tabu_controls_type = 0;
@@ -63,6 +64,28 @@ clear_playlist()
 {
   tabu_playlist_clear (tabu_get_playlist());
   tabu_backend_clear ();
+}
+
+void
+remove_selected_files()
+{
+  GtkTreeSelection *selection = gtk_tree_view_get_selection (
+    GTK_TREE_VIEW (TABU_PLAYLIST (tabu_get_playlist())->tree_view));
+
+  tabu_playlist_remove_selection (
+    TABU_PLAYLIST (tabu_get_playlist()), 
+    selection);
+}
+
+void
+crop_selected_files()
+{
+  GtkTreeSelection *selection = gtk_tree_view_get_selection (
+    GTK_TREE_VIEW (TABU_PLAYLIST (tabu_get_playlist())->tree_view));
+
+  tabu_playlist_crop_selection (
+    TABU_PLAYLIST (tabu_get_playlist()), 
+    selection);
 }
 
 void recurse_dir(gchar *path)
@@ -384,6 +407,18 @@ tabu_controls_init (TabuControls *self)
     G_OBJECT (self->del_menu_item_1),
     "activate",
     G_CALLBACK (clear_playlist),
+    NULL);
+
+  g_signal_connect (
+    self->del_button,
+    "clicked",
+    G_CALLBACK (remove_selected_files),
+    NULL);
+
+  g_signal_connect (
+    self->del_menu_item_2,
+    "activate",
+    G_CALLBACK (crop_selected_files),
     NULL);
 
   /* Volume Button */

@@ -144,16 +144,70 @@ tabu_playlist_clear (TabuPlaylist *playlist)
 }
 
 void
-tabu_playlist_remove_selection (TabuPlaylist *playlist, GtkTreeSelection *selection)
+tabu_playlist_crop_selection (TabuPlaylist *playlist, GtkTreeSelection *selection)
 {
   GtkTreeModel *store;
   GtkTreeIter iter;
   GList *selected;
+  GList *references = NULL;
+  GList *to_remove = NULL;
 
   selected = gtk_tree_selection_get_selected_rows ( selection, &store );
   while (selected != NULL)
   {
-    if ( gtk_tree_model_get_iter (GTK_TREE_MODEL (TABU_PLAYLIST (tabu_get_playlist())->list_store), &iter, selected->data))
+    references = g_list_append ( references, gtk_tree_row_reference_new (store, selected->data));
+    selected = g_slist_next ( selected );
+  }
+
+  references = g_list_first (references);
+  gtk_tree_model_get_iter_first (store, &iter);
+  do
+  {
+    if (g_list_find (references, gtk_tree_row_reference_new (store, gtk_tree_model_get_path (store, &iter))) == NULL)
+    {
+      to_remove = g_list_append (to_remove, gtk_tree_row_reference_new (store, gtk_tree_model_get_path (store, &iter)));      
+    }
+  }while (gtk_tree_model_iter_next (store, &iter));
+
+  to_remove = g_list_first (to_remove);
+  while ( to_remove!= NULL)
+  {        
+    g_print ("remove row");
+    /* ok, now remove the song from the playlist */
+    gtk_tree_model_get_iter (store, &iter, gtk_tree_row_reference_get_path(to_remove->data));
+    gtk_list_store_remove ( GTK_LIST_STORE ( store ), &iter);   
+    to_remove = g_slist_next (to_remove); 
+  }
+  
+  g_list_foreach (references, gtk_tree_row_reference_free, NULL);
+  g_list_free (references);
+
+  g_list_foreach (selected, gtk_tree_path_free, NULL);
+  g_list_free (selected);
+}
+
+void
+tabu_playlist_remove_selection (TabuPlaylist *playlist, GtkTreeSelection *selection)
+{
+  GtkTreeModel *store;
+  GtkTreeIter iter;
+  GtkTreePath *path;
+  GList *selected;
+  GList *references = NULL;
+
+  selected = gtk_tree_selection_get_selected_rows ( selection, &store );
+  while (selected != NULL)
+  {
+    references = g_list_append ( references, gtk_tree_row_reference_new (store, selected->data));
+    selected = g_slist_next ( selected );
+  }
+
+  references = g_list_first (references);
+  while (references != NULL)
+  {
+    path = gtk_tree_row_reference_get_path (references->data);
+
+    if ( gtk_tree_model_get_iter (GTK_TREE_MODEL (TABU_PLAYLIST (tabu_get_playlist())->list_store), &iter, path))
     {
       gchar *song = NULL;
       gtk_tree_model_get (GTK_TREE_MODEL (TABU_PLAYLIST (playlist)->list_store ), &iter, 2, &song, -1 );
@@ -173,8 +227,13 @@ tabu_playlist_remove_selection (TabuPlaylist *playlist, GtkTreeSelection *select
       /* ok, now remove the song from the playlist */
       gtk_list_store_remove ( GTK_LIST_STORE ( store ), &iter );
     } 
-    selected = g_slist_next ( selected );
+    
+    gtk_tree_path_free (path);    
+    references = g_slist_next ( references );
   }
+
+  g_list_foreach (references, gtk_tree_row_reference_free, NULL);
+  g_list_free (references);
 
   g_list_foreach (selected, gtk_tree_path_free, NULL);
   g_list_free (selected);
