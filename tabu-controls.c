@@ -699,7 +699,7 @@ controls_button_press_event (
       /* location/duration progress bar toggle           */
       /* ------------------------------------------------*/
 
-      else if ((event->x > 246) && (event->x < 254) 
+      else if ((event->x > 243) && (event->x < 260) 
                 && (event->y < widget->allocation.height - 10) 
                 && (event->y > widget->allocation.height - 22))
       {
@@ -729,6 +729,18 @@ controls_button_press_event (
                && (event->y < (offset + (TABU_CONTROLS_HEIGTH / 2) + 10)))
       {
         tabu_backend_play_uri (tabu_playlist_next (tabu_get_playlist (), FALSE));
+      }
+
+      /* ------------------------------------------------*/
+      /* Previous song button                                */
+      /* ------------------------------------------------*/
+
+      else if ((event->x > ((widget->allocation.width / 2) - 46))
+               && (event->x < ((widget->allocation.width / 2) - 28))
+               && (event->y > (offset + (TABU_CONTROLS_HEIGTH / 2) - 8))
+               && (event->y < (offset + (TABU_CONTROLS_HEIGTH / 2) + 10)))
+      {
+        tabu_backend_play_uri (tabu_playlist_next (tabu_get_playlist (), TRUE));
       }
 
       /* ------------------------------------------------*/
