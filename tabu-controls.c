@@ -14,17 +14,10 @@
 
 #define TABU_CONTROLS_HEIGTH 35
 #define TABU_OPTIONS_HEIGTH 30
-#define TABU_ICON_PLAY DATA_DIR "/tabu/play.png"
-#define TABU_ICON_PAUSE DATA_DIR "/tabu/pause.png"
-#define TABU_ICON_NEXT DATA_DIR "/tabu/next.png"
-#define TABU_ICON_PREV DATA_DIR "/tabu/prev.png"
-#define TABU_ICON_VOLUMEN DATA_DIR "/tabu/volumen.png"
-#define TABU_ICON_VOLUMENOVER DATA_DIR "/tabu/volumen-over.png"
 
 #define TABU_ICON_DEL DATA_DIR "/tabu/del.png"
-#define TABU_ICON_DELOVER DATA_DIR "/tabu/del-over.png"
 #define TABU_ICON_ADD DATA_DIR "/tabu/add.png"
-#define TABU_ICON_ADDOVER DATA_DIR "/tabu/add-over.png"
+
 
 static GtkType tabu_controls_type = 0;
 
