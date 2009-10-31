@@ -28,34 +28,25 @@ typedef struct _TabuControlsClass TabuControlsClass;
 
 struct _TabuControls
 {
-  GtkHBox parent;
+  GtkDrawingArea parent;
+  
+  gboolean add_clicked;
+  gboolean addfile_over;
+  gboolean addfolder_over;
+  
+  gboolean del_clicked;
+  gboolean clear_all_over;
+  gboolean clear_selected_over;
 
-  GtkWidget *box1;
-  GtkWidget *box2;
-  GtkWidget *box3;
+  gboolean pbar_visible;
+  gboolean vol_visible;
 
-  GtkWidget *play_button;
-  GtkWidget *next_button;
-  GtkWidget *prev_button;
-  GtkWidget *add_button;
-  GtkWidget *del_button;
-  GtkWidget *vol_button;
-  GtkWidget *pref_button;
-
-  GtkWidget *empty_widget1;
-  GtkWidget *empty_widget2;
-
-  GtkWidget *add_menu;
-  GtkWidget *add_menu_item;
-
-  GtkWidget *del_menu;
-  GtkWidget *del_menu_item_1;
-  GtkWidget *del_menu_item_2;
+  gboolean volume_clicked;
 };
 
 struct _TabuControlsClass
 {
-  GtkHBoxClass parent_class;
+  GtkDrawingAreaClass parent_class;
 };
 
 GType tabu_controls_get_type (void);

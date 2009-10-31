@@ -5,6 +5,6 @@ Exec=tabu
 Terminal=false
 Type=Application
 StartupNotify=true
-Icon=tabu.png
+Icon=tabu
 Categories=Application;GTK;AudioVideo;
 MimeType=

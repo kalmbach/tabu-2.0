@@ -11,14 +11,16 @@
 static GtkType tabu_playlist_type = 0;
 
 /* privated functions */
-static void tabu_playlist_class_init (TabuPlaylistClass *klass);
+static void tabu_playlist_class_init ();
 static void tabu_playlist_init (TabuPlaylist *self);
-static void tabu_playlist_row_activated_callback ( 
+
+void tabu_playlist_row_activated_callback ( 
   GtkTreeView *view, 
   GtkTreePath *path, 
   GtkTreeViewColumn *column, 
   gpointer data);
-static void tabu_playlist_key_press_callback ( 
+
+void tabu_playlist_key_press_callback ( 
   GtkWidget *tview, 
   GdkEventKey *event,   
   gpointer data);
@@ -40,6 +42,7 @@ tabu_playlist_get_type (void)
 			sizeof (TabuPlaylist),
 			0,
 			(GInstanceInitFunc) tabu_playlist_init,
+      NULL
 		};
 		tabu_playlist_type = g_type_register_static (
       GTK_TYPE_SCROLLED_WINDOW, 
@@ -49,6 +52,176 @@ tabu_playlist_get_type (void)
 	}
 
 	return tabu_playlist_type;
+}
+
+void
+tabu_playlist_set_song (TabuPlaylist *playlist, gboolean value)
+{
+  GtkTreePath *path;
+  GtkTreeIter iter;
+
+  path = gtk_tree_row_reference_get_path (TABU_PLAYLIST (playlist)->reference);
+  if (gtk_tree_model_get_iter (
+        GTK_TREE_MODEL(TABU_PLAYLIST (playlist)->list_store), 
+        &iter, 
+        path)
+     )
+  {
+    if (value)
+    {
+      gchar *song_name = NULL;
+      gtk_tree_model_get (
+        GTK_TREE_MODEL (TABU_PLAYLIST(playlist)->list_store), 
+        &iter, 
+        1, &song_name, 
+        -1);
+
+      if (song_name != NULL)
+      {
+        gtk_list_store_set (
+          TABU_PLAYLIST (tabu_get_playlist())->list_store, 
+          &iter, 1, g_strconcat("<b>", song_name, "</b>", NULL), -1);  
+      }
+
+      TABU_PLAYLIST (playlist)->song_name = g_strdup(song_name);
+    }
+    else
+    {
+      gtk_list_store_set (
+          TABU_PLAYLIST (tabu_get_playlist())->list_store, 
+          &iter, 1, TABU_PLAYLIST (playlist)->song_name, -1);  
+    }
+  }
+}
+
+gchar *
+tabu_playlist_next (TabuPlaylist *playlist, gboolean *bGetPrevious)
+{
+  GtkTreeIter iter;
+  GtkTreePath *path;
+  gchar *next_uri;
+  gboolean bHaveIter = TRUE;
+
+  if (TABU_PLAYLIST (playlist)->reference == NULL)
+  {
+    if (!gtk_tree_model_get_iter_first (
+          GTK_TREE_MODEL (TABU_PLAYLIST (playlist)->list_store),
+          &iter))
+    {
+      bHaveIter = FALSE;
+    }
+  }
+  else if (!bGetPrevious)
+  {
+    path = gtk_tree_row_reference_get_path (TABU_PLAYLIST (playlist)->reference);
+    if (path != NULL)
+    {
+      if (gtk_tree_model_get_iter (
+          GTK_TREE_MODEL (TABU_PLAYLIST (playlist)->list_store), 
+          &iter, 
+          path)
+         )
+      {
+        if (!gtk_tree_model_iter_next(
+              GTK_TREE_MODEL (TABU_PLAYLIST (playlist)->list_store), 
+              &iter)
+           )
+        {       
+          if (!gtk_tree_model_get_iter_first (
+            GTK_TREE_MODEL (TABU_PLAYLIST (playlist)->list_store),
+            &iter))
+          {         
+            bHaveIter = FALSE;
+          }
+        }
+      }      
+    }
+    else
+    {
+      bHaveIter = FALSE;
+    }
+  }
+  else if (bGetPrevious)
+  {
+    path = gtk_tree_row_reference_get_path (TABU_PLAYLIST (playlist)->reference);
+    if (( path != NULL ) && ( gtk_tree_path_prev ( path ) ))
+    {
+      if (!gtk_tree_model_get_iter (GTK_TREE_MODEL (TABU_PLAYLIST (playlist)->list_store), &iter, path))
+      {
+        bHaveIter = FALSE;
+      }
+    }
+  }
+
+  /* this can be bad.. and never ending, really, i'm not sure about this, so far, it works */
+  if (!bHaveIter) 
+  {
+    gchar *song = NULL;
+    
+    TABU_PLAYLIST (playlist)->reference = NULL;
+
+    if (gtk_tree_model_get_iter_first (
+          GTK_TREE_MODEL (TABU_PLAYLIST (playlist)->list_store),
+          &iter))
+    {
+      do
+      {
+        gtk_tree_model_get(
+          GTK_TREE_MODEL (TABU_PLAYLIST (playlist)->list_store),
+          &iter,
+          1, &song,
+          -1);
+        
+        if (song != NULL)
+        {
+          if (strncmp (song, "<b>", 3) == 0)
+          {
+            path = gtk_tree_model_get_path (
+              GTK_TREE_MODEL (TABU_PLAYLIST (playlist)->list_store), 
+              &iter);
+
+            TABU_PLAYLIST (playlist)->reference = gtk_tree_row_reference_new (
+              GTK_TREE_MODEL (TABU_PLAYLIST (playlist)->list_store),
+              path);  
+
+            bHaveIter = TRUE;          
+          }
+        }
+
+        song = NULL;
+              
+      }while ((gtk_tree_model_iter_next(
+              GTK_TREE_MODEL (TABU_PLAYLIST (playlist)->list_store), 
+              &iter)) && !bHaveIter);
+
+      return (tabu_playlist_next (playlist, bGetPrevious));
+    }
+
+    return (NULL);
+  }
+
+  gtk_tree_model_get (
+    GTK_TREE_MODEL (TABU_PLAYLIST(playlist)->list_store), 
+    &iter, 
+    2, &next_uri, 
+    -1);
+
+  path = gtk_tree_model_get_path (
+           GTK_TREE_MODEL (TABU_PLAYLIST (playlist)->list_store), 
+           &iter);
+
+  tabu_playlist_set_song (playlist, FALSE);
+  TABU_PLAYLIST (playlist)->reference = gtk_tree_row_reference_new (
+    GTK_TREE_MODEL (TABU_PLAYLIST (playlist)->list_store),
+    path);   
+  
+  if ((TABU_PLAYLIST (playlist)->reference != NULL) && (next_uri != NULL))
+  {
+    tabu_playlist_set_song (playlist, TRUE);
+    return (next_uri);
+  }
+
+  return (NULL);
 }
 
 gchar *
@@ -141,65 +314,27 @@ void
 tabu_playlist_clear (TabuPlaylist *playlist)
 {
   gtk_list_store_clear (TABU_PLAYLIST (playlist)->list_store);
+  tabu_backend_stop();
+  TABU_PLAYLIST (playlist)->reference = NULL;
 }
 
 void
-tabu_playlist_crop_selection (TabuPlaylist *playlist, GtkTreeSelection *selection)
-{
-  GtkTreeModel *store;
-  GtkTreeIter iter;
-  GList *selected;
-  GList *references = NULL;
-  GList *to_remove = NULL;
-
-  selected = gtk_tree_selection_get_selected_rows ( selection, &store );
-  while (selected != NULL)
-  {
-    references = g_list_append ( references, gtk_tree_row_reference_new (store, selected->data));
-    selected = g_slist_next ( selected );
-  }
-
-  references = g_list_first (references);
-  gtk_tree_model_get_iter_first (store, &iter);
-  do
-  {
-    if (g_list_find (references, gtk_tree_row_reference_new (store, gtk_tree_model_get_path (store, &iter))) == NULL)
-    {
-      to_remove = g_list_append (to_remove, gtk_tree_row_reference_new (store, gtk_tree_model_get_path (store, &iter)));      
-    }
-  }while (gtk_tree_model_iter_next (store, &iter));
-
-  to_remove = g_list_first (to_remove);
-  while ( to_remove!= NULL)
-  {        
-    g_print ("remove row");
-    /* ok, now remove the song from the playlist */
-    gtk_tree_model_get_iter (store, &iter, gtk_tree_row_reference_get_path(to_remove->data));
-    gtk_list_store_remove ( GTK_LIST_STORE ( store ), &iter);   
-    to_remove = g_slist_next (to_remove); 
-  }
-  
-  g_list_foreach (references, gtk_tree_row_reference_free, NULL);
-  g_list_free (references);
-
-  g_list_foreach (selected, gtk_tree_path_free, NULL);
-  g_list_free (selected);
-}
-
-void
-tabu_playlist_remove_selection (TabuPlaylist *playlist, GtkTreeSelection *selection)
+tabu_playlist_remove_selection (TabuPlaylist *playlist)
 {
   GtkTreeModel *store;
   GtkTreeIter iter;
   GtkTreePath *path;
   GList *selected;
   GList *references = NULL;
+  GtkTreeSelection *selection;
+  
+  selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (TABU_PLAYLIST (playlist)->tree_view));
 
   selected = gtk_tree_selection_get_selected_rows ( selection, &store );
   while (selected != NULL)
   {
     references = g_list_append ( references, gtk_tree_row_reference_new (store, selected->data));
-    selected = g_slist_next ( selected );
+    selected = g_list_next ( selected );
   }
 
   references = g_list_first (references);
@@ -207,35 +342,31 @@ tabu_playlist_remove_selection (TabuPlaylist *playlist, GtkTreeSelection *select
   {
     path = gtk_tree_row_reference_get_path (references->data);
 
-    if ( gtk_tree_model_get_iter (GTK_TREE_MODEL (TABU_PLAYLIST (tabu_get_playlist())->list_store), &iter, path))
+    if (tabu_backend_is_playing())
     {
-      gchar *song = NULL;
-      gtk_tree_model_get (GTK_TREE_MODEL (TABU_PLAYLIST (playlist)->list_store ), &iter, 2, &song, -1 );
-
-      if ( song && tabu_backend_get_pipeline_uri() )
+      GtkTreePath *song_path = gtk_tree_row_reference_get_path (TABU_PLAYLIST (playlist)->reference);
+  
+      if (!strcmp(gtk_tree_path_to_string(path),gtk_tree_path_to_string(song_path)))
       {
-        /* if the song to be removed is the currently playing song */
-        if ( !strcmp ( song, tabu_backend_get_pipeline_uri() ) )
-        {
-          tabu_backend_stop();
-          tabu_controls_sync_playicon (TABU_CONTROLS(tabu_get_controls())->play_button, NULL);
-        }      
-      }
+        tabu_backend_stop();        
+        TABU_PLAYLIST(playlist)->reference = NULL;
+      }     
+    }
 
-      g_free ( song );
-
-      /* ok, now remove the song from the playlist */
-      gtk_list_store_remove ( GTK_LIST_STORE ( store ), &iter );
-    } 
+    /* ok, now remove the song from the playlist */
+    if (gtk_tree_model_get_iter (GTK_TREE_MODEL (store), &iter, path))
+    {
+      gtk_list_store_remove (GTK_LIST_STORE (store), &iter );    
+    }
     
     gtk_tree_path_free (path);    
-    references = g_slist_next ( references );
+    references = g_list_next ( references );
   }
 
-  g_list_foreach (references, gtk_tree_row_reference_free, NULL);
+  g_list_foreach (references, (GFunc)gtk_tree_row_reference_free, NULL);
   g_list_free (references);
 
-  g_list_foreach (selected, gtk_tree_path_free, NULL);
+  g_list_foreach (selected, (GFunc) gtk_tree_path_free, NULL);
   g_list_free (selected);
 }
 
@@ -260,55 +391,60 @@ tabu_playlist_append (TabuPlaylist *playlist, gchar* filename, gchar *uri)
 }
 
 void
-on_tabu_playlist_row_activated_event ( 
-  GtkTreeView *view, 
-  GtkTreePath *path, 
-  GtkTreeViewColumn *column, 
-  gpointer data )
+on_tabu_playlist_row_activated_event ( GtkTreeView *view )
 {
+  GList *selected;
+  GtkTreeModel *store;
+  GtkTreeIter iter;
+  gchar *uri;
+
   GtkTreeSelection *selection = gtk_tree_view_get_selection ( view );
-  tabu_backend_play_selection ( selection );
-  tabu_controls_sync_playicon (TABU_CONTROLS(tabu_get_controls())->play_button, NULL);
+
+  selected = gtk_tree_selection_get_selected_rows ( selection, &store );
+
+  if (gtk_tree_model_get_iter (GTK_TREE_MODEL (store), &iter, selected->data))
+  {
+    gtk_tree_model_get (GTK_TREE_MODEL (store), &iter, 2, &uri, -1);
+
+    tabu_playlist_set_song (tabu_get_playlist(), FALSE);
+    TABU_PLAYLIST (tabu_get_playlist())->reference = gtk_tree_row_reference_new (store, selected->data);
+    tabu_playlist_set_song (tabu_get_playlist(), TRUE);
+
+    tabu_backend_play_uri (uri);
+  }
+
+  g_list_foreach (selected, (GFunc) gtk_tree_path_free, NULL);
+  g_list_free (selected);
 }
 
 gboolean
 on_tabu_playlist_key_press_event ( 
   GtkWidget *view, 
-  GdkEventKey *event, 
-  gpointer data )
+  GdkEventKey *event)
 {
-  GtkTreeSelection *selection = gtk_tree_view_get_selection (
-    GTK_TREE_VIEW (view));
-
   if ( event->type == GDK_KEY_PRESS )
   {
     switch ( event->keyval )
     {
       /* if the delete key is pressed. remove the item from the playlist */
       case GDK_Delete:
-        tabu_playlist_remove_selection ( tabu_get_playlist(), selection );
-        break;
-
+        {
+          if (GTK_TREE_VIEW (view))
+          {
+            tabu_playlist_remove_selection ( tabu_get_playlist() );
+          }
+          break;
+        }
       default: 
         return FALSE;
     }
   }
-}
 
-
-void
-_cell_data_function(
-  GtkTreeViewColumn *col,
-  GtkCellRenderer   *renderer,
-  GtkTreeModel      *model,
-  GtkTreeIter       *iter,
-  gpointer           user_data)
-{
-  
+  return FALSE;
 }
 
 static void
-tabu_playlist_class_init (TabuPlaylistClass *klass)
+tabu_playlist_class_init ()
 {
 }
 
@@ -401,8 +537,8 @@ tabu_playlist_init (TabuPlaylist *self)
     GTK_WIDGET (self->tree_view));
 }
 
-GtkWidget *
+TabuPlaylist *
 tabu_playlist_new (void)
 {
-  return (GTK_WIDGET (g_object_new (tabu_playlist_get_type(), NULL)));
+  return (TABU_PLAYLIST (g_object_new (tabu_playlist_get_type(), NULL)));
 }

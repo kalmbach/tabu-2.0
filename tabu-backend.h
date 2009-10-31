@@ -1,9 +1,14 @@
-void tabu_backend_clear ();
+void tabu_backend_init ();
+
 void tabu_backend_stop ();
+void tabu_backend_pause ();
 void tabu_backend_play ();
-void tabu_backend_next ();
-void tabu_backend_previous ();
-void tabu_backend_play_selection ( GtkTreeSelection *selection );
-void tabu_backend_set_volume (gdouble volume);
-gchar * tabu_backend_get_pipeline_uri ( );
+void tabu_backend_play_uri (gchar *uri);
+
 gboolean tabu_backend_is_playing();
+gboolean tabu_backend_is_paused();
+gint64 tabu_backend_get_current_length ();
+gint64 tabu_backend_get_current_position ();
+
+gint64 tabu_backend_get_volume ();
+void tabu_backend_set_volume (gdouble volume);

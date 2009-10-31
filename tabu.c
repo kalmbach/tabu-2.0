@@ -5,8 +5,8 @@
 #include "tabu-backend.h"
 
 GtkWidget *window;
-GtkWidget *controls;
-GtkWidget *playlist;
+TabuControls *controls;
+TabuPlaylist *playlist;
 
 TabuPlaylist *
 tabu_get_playlist()
@@ -32,14 +32,16 @@ main ( int argc, char *argv[] )
   gtk_init( &argc, &argv );
   
   window = tabu_window_new ();    
+  g_print ("\ntabu-createcontrols");
   controls = tabu_controls_new ();
+  g_print ("\ntabu-leave-createcontrols");
   playlist = tabu_playlist_new ();
   
   tabu_window_add (TABU_WINDOW (window), GTK_WIDGET (playlist), TRUE, TRUE, 0);  
   tabu_window_add (TABU_WINDOW (window), GTK_WIDGET (controls), FALSE, FALSE, 0);  
 
-  gtk_widget_show_all (controls);
-  gtk_widget_show_all (window);
+  gtk_widget_show_all (GTK_WIDGET (controls));
+  gtk_widget_show_all (GTK_WIDGET (window));
   tabu_backend_init ();
   gtk_main ( );
 

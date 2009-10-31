@@ -29,12 +29,12 @@ dnl Check if debug support is enabled or not
 AC_MSG_CHECKING(for debug support)
 if test "x$debug" = "xyes" ; then
     AC_DEFINE(GFPM_DEBUG, 1, [Debug support: enabled])
-    CFLAGS="${CFLAGS} -ggdb3 -Wall -DTABU_DEBUG"
+    CFLAGS="${CFLAGS} -ggdb3 -Wall -W -DTABU_DEBUG"
     debug=yes
     AC_MSG_RESULT(yes)
 else
     AC_DEFINE(GFPM_DEBUG, 0, [Debug support: disabled])
-    CFLAGS="${CFLAGS} -Wall"
+    CFLAGS="${CFLAGS} -Wall -W"
     debug=no
     AC_MSG_RESULT(no)
 fi

@@ -33,6 +33,9 @@ struct _TabuPlaylist
   GtkCellRenderer *cell_renderer;
   GtkTreeViewColumn *tree_view_column;
   GtkListStore *list_store;
+
+  GtkTreeRowReference *reference;
+  gchar *song_name;
 };
 
 
@@ -43,14 +46,15 @@ struct _TabuPlaylistClass
 
 GType tabu_playlist_get_type (void);
 
-GtkWidget *tabu_playlist_new (void);
+TabuPlaylist *tabu_playlist_new (void);
 
 void tabu_playlist_append (
   TabuPlaylist *playlist, gchar* filename, gchar *uri);
 
 void tabu_playlist_clear (TabuPlaylist *playlist);
-void tabu_playlist_crop_selection (TabuPlaylist *playlist, GtkTreeSelection *selection);
-void tabu_playlist_remove_selection (TabuPlaylist *playlist, GtkTreeSelection *selection);
+void tabu_playlist_remove_selection (TabuPlaylist *playlist);
+
+gchar *tabu_playlist_next();
 
 G_END_DECLS
 

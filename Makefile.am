@@ -1,5 +1,5 @@
 # what flags you want to pass to the C compiler & linker
-AM_CFLAGS = 	-Wall -O2 \
+AM_CFLAGS = 	-Wall -W -O2 \
   @GTK_CFLAGS@ \
   @GSTREAMER_CFLAGS@ \
   @TAGLIB_CFLAGS@ \
