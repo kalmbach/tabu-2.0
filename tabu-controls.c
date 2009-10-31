@@ -665,6 +665,8 @@ controls_button_press_event (
           if (current_volume > 0)
           {
             current_volume = current_volume - 0.05;
+            if (current_volume < 0) 
+              current_volume = 0;
           }
           tabu_backend_set_volume (current_volume);
         }        
