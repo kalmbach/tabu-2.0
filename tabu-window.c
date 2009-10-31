@@ -49,7 +49,6 @@ tabu_window_add ( TabuWindow *window,
   gboolean fill, 
   guint padding )
 {
-  g_print ("\ntabu-window-add");
   gtk_box_pack_start ( 
     GTK_BOX (window->main_box), 
     GTK_WIDGET (widget), 

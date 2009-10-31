@@ -32,9 +32,7 @@ main ( int argc, char *argv[] )
   gtk_init( &argc, &argv );
   
   window = tabu_window_new ();    
-  g_print ("\ntabu-createcontrols");
   controls = tabu_controls_new ();
-  g_print ("\ntabu-leave-createcontrols");
   playlist = tabu_playlist_new ();
   
   tabu_window_add (TABU_WINDOW (window), GTK_WIDGET (playlist), TRUE, TRUE, 0);  

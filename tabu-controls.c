@@ -627,8 +627,6 @@ controls_button_press_event (
   GtkWidget *widget, 
   GdkEventButton *event)
 {   
-  g_print("\nX: %f, Y: %f",event->x, event->y); 
-
   TABU_CONTROLS (widget)->add_clicked = FALSE;
   TABU_CONTROLS (widget)->del_clicked = FALSE;  
 
