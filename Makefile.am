@@ -23,4 +23,7 @@ desktop_DATA = tabu.desktop
 pixmapdir = $(datadir)/tabu
 pixmap_DATA = images/*
 
-EXTRA_DIST = $(desktop_DATA) $(pixmap_DATA)
+icondir = $(datadir)/pixmaps
+icon_DATA = images/tabu.png
+
+EXTRA_DIST = $(desktop_DATA) $(pixmap_DATA) $(icon_DATA)
